@@ -1,0 +1,87 @@
+
+<script src="../tinyTest.js"></script>
+
+<script>
+
+function map( originalArray, callback,optionalThis){
+var mapCallback = callback;
+
+    if(optionalThis){
+        mapCallback = callback.bind(optionalThis);
+    }
+
+    var mappedArray = [] ;
+
+    for (var i = 0; i<originalArray.length ; i++){
+        if (i in originalArray){
+            mappedArray[i] = mapCallback(originalArray[i], i, originalArray);
+        }
+    }
+    return mappedArray;
+}
+
+ tests({
+	'It should run callback function array.length times': function(){
+
+		var numbersOfTimesCallbackhasRun = 0;
+		map([1,2,3], function() {
+			numbersOfTimesCallbackhasRun++;
+		});
+		eq(3,numbersOfTimesCallbackhasRun);
+    },
+    'It should pass in the ith elem as the first argument to the callback': function(){
+
+    	map([1], function(number){
+    		eq(number,1);
+    	});
+    },
+    'It should pass in the ith position as the second argument to callback.': function() {
+
+    	map([1], function(number,position){
+    		eq(position,0);
+    	})
+    },
+    'It should pass in the original array as third argument to callback.': function(){
+
+    	var testArray = [0,1,2];
+    	map(testArray, function(number,position,originalArray){
+    		eq(originalArray, testArray);
+    	})
+    },
+    'It should accept an optional this object' : function(){
+
+       map([1], function(){
+            eq(this.description, 'I should be accessible inside of the callback ');
+         }, {description:'I should be accessible inside of the callback '});
+    },
+
+    'It should return an array': function(){
+        var mappedArray = map([], function(){})
+        eq(Array.isArray(mappedArray), true);
+    },
+
+    'It should return a new array, not the original array' : function(){
+       var originalArray = [];
+       var mappedArray = map(originalArray, function(){});
+        eq(originalArray !== mappedArray, true);
+
+    },
+    'It should return a mapped array': function(){
+        var mappedArray = map([1], function(number){
+            return number * 4;
+        });
+        eq(mappedArray[0], 4);
+
+   },
+   'It should skip unassigned indexes ': function() {
+      var weirdArray = [, 1];
+      var mappedArray = map(weirdArray, function double(number){
+        return number * 2;
+      });
+
+      eq(0 in mappedArray, false);
+      eq(mappedArray[1],2);
+    }
+ });
+
+</script>
